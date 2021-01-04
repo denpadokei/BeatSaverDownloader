@@ -157,6 +157,7 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="BeastSaber\BeastSaberApiHelper.cs" />
     <Compile Include="BeastSaber\BeastSaberApiResult.cs" />
     <Compile Include="Misc\Filters.cs" />
     <Compile Include="Misc\SongDownloader.cs" />
