@@ -1,5 +1,6 @@
 ﻿using BeatSaberMarkupLanguage;
 using BeatSaverDownloader.UI.ViewControllers;
+using BeatSaverDownloader.Misc;
 using HMUI;
 using System;
 using UnityEngine;
@@ -75,11 +76,14 @@ namespace BeatSaverDownloader.UI
             string title = $"{_moreSongsView._currentFilter}";
             switch(_moreSongsView._currentFilter)
             {
-                case MoreSongsListViewController.FilterMode.BeatSaver:
-                    SetTitle(title + $" - {_moreSongsView._currentBeatSaverFilter}");
+                case Misc.Filters.FilterMode.BeatSaver:
+                    SetTitle(title + $" - {_moreSongsView._currentBeatSaverFilter.Name()}");
                     break;
-                case MoreSongsListViewController.FilterMode.ScoreSaber:
-                    SetTitle(title + $" - {_moreSongsView._currentScoreSaberFilter}");
+                case Misc.Filters.FilterMode.ScoreSaber:
+                    SetTitle(title + $" - {_moreSongsView._currentScoreSaberFilter.Name()}");
+                    break;
+                case Misc.Filters.FilterMode.BeastSaber:
+                    SetTitle(title + $" - {_moreSongsView._currentBeastSaberFilter.Name()}");
                     break;
             }
         }
