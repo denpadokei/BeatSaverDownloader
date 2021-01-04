@@ -211,9 +211,11 @@ namespace BeatSaverDownloader.UI.ViewControllers
             var bombsDisplay = _levelDetails.transform.Find("BeatmapParamsPanel").Find("BombsCount");
            var layout = bombsDisplay.parent.gameObject.AddComponent<HorizontalLayoutGroup>();
             var upDisplay = GameObject.Instantiate(bombsDisplay, _bombsText.transform.parent.parent);
+            upDisplay.gameObject.name = "UpVotesCount";
             upDisplay.GetComponentInChildren<ImageView>().sprite = BeatSaverDownloader.Misc.Sprites.ThumbUp;
             _upText = upDisplay.GetComponentInChildren<CurvedTextMeshPro>();
             var downDisplay = GameObject.Instantiate(bombsDisplay, _bombsText.transform.parent.parent);
+            downDisplay.gameObject.name = "DownVotesCount";
             downDisplay.GetComponentInChildren<ImageView>().sprite = BeatSaverDownloader.Misc.Sprites.ThumbDown;
             _downText = downDisplay.GetComponentInChildren<CurvedTextMeshPro>();
         }
