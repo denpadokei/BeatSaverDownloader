@@ -105,8 +105,8 @@ namespace BeatSaverDownloader.UI.ViewControllers
             if (_detailViewSetup)
             {
                 //Clear all the data
-          //      _timeText.text = "--";
-          //      _bpmText.text = "--";
+                //      _timeText.text = "--";
+                //      _bpmText.text = "--";
                 _npsText.text = "--";
                 _notesText.text = "--";
                 _obstaclesText.text = "--";
@@ -184,14 +184,14 @@ namespace BeatSaverDownloader.UI.ViewControllers
 
             _coverImage = _levelDetails.transform.Find("LevelBarBig").Find("SongArtwork").GetComponent<ImageView>();
 
-         //   _timeText = _levelDetails.GetComponentsInChildren<TextMeshProUGUI>().First(x => x.gameObject.transform.parent.name == "Time");
-         //   _bpmText = _levelDetails.GetComponentsInChildren<TextMeshProUGUI>().First(x => x.gameObject.transform.parent.name == "BPM");
-            
+            //   _timeText = _levelDetails.GetComponentsInChildren<TextMeshProUGUI>().First(x => x.gameObject.transform.parent.name == "Time");
+            //   _bpmText = _levelDetails.GetComponentsInChildren<TextMeshProUGUI>().First(x => x.gameObject.transform.parent.name == "BPM");
+
             _npsText = _levelDetails.GetComponentsInChildren<CurvedTextMeshPro>().First(x => x.gameObject.transform.parent.name == "NPS");
             _notesText = _levelDetails.GetComponentsInChildren<CurvedTextMeshPro>().First(x => x.gameObject.transform.parent.name == "NotesCount");
             _obstaclesText = _levelDetails.GetComponentsInChildren<CurvedTextMeshPro>().First(x => x.gameObject.transform.parent.name == "ObstaclesCount");
             _bombsText = _levelDetails.GetComponentsInChildren<CurvedTextMeshPro>().First(x => x.gameObject.transform.parent.name == "BombsCount");
-          
+
             CreateVoteDisplay();
             //     _timeText.text = "--";
             //      _bpmText.text = "--";
@@ -209,7 +209,7 @@ namespace BeatSaverDownloader.UI.ViewControllers
         private void CreateVoteDisplay()
         {
             var bombsDisplay = _levelDetails.transform.Find("BeatmapParamsPanel").Find("BombsCount");
-           var layout = bombsDisplay.parent.gameObject.AddComponent<HorizontalLayoutGroup>();
+            var layout = bombsDisplay.parent.gameObject.AddComponent<HorizontalLayoutGroup>();
             var upDisplay = GameObject.Instantiate(bombsDisplay, _bombsText.transform.parent.parent);
             upDisplay.gameObject.name = "UpVotesCount";
             upDisplay.GetComponentInChildren<ImageView>().sprite = BeatSaverDownloader.Misc.Sprites.ThumbUp;

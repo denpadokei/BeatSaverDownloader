@@ -386,9 +386,9 @@ namespace BeatSaverDownloader.UI.ViewControllers
             for (uint i = 0; i < count; ++i)
             {
                 _fetchingDetails = $"({i}/{count})";
-                
+
                 BeastSaber.BeastSaberApiResult page = await BeastSaber.BeastSaberApiHelper.GetPage(_currentBeastSaberFilter, lastPage, 40, cancellationTokenSource.Token);
-                
+
                 lastPage++;
                 if (page.songs?.Count == 0)
                 {
@@ -397,7 +397,6 @@ namespace BeatSaverDownloader.UI.ViewControllers
                 if (page.songs != null)
                     newMaps.AddRange(page.songs);
                 if (_endOfResults) break;
-                //     Plugin.log.Info($"{page.songs.Count} Curated songs on page {i}");
             }
             foreach (var song in newMaps)
             {
@@ -623,19 +622,12 @@ namespace BeatSaverDownloader.UI.ViewControllers
         }
         protected async void LoadImage()
         {
-            try
+
+            if (_song.Partial)
             {
-                if (_song.Partial)
-                {
-                    base.icon = Sprites.BeastSaberLogo;
-                    _callback(this);
-                    return;
-                }
-                //await _song.Populate();
-            }
-            catch (BeatSaverSharp.Exceptions.InvalidPartialException e)
-            {
-                Plugin.log.Debug($"Failed to populate Partial Beatmap: {_song.Name}");
+                base.icon = Sprites.BeastSaberLogo;
+                _callback(this);
+                return;
             }
 
             byte[] image = await _song.FetchCoverImage();

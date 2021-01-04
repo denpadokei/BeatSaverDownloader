@@ -38,13 +38,13 @@ namespace BeatSaverDownloader.BeastSaber
                 Newtonsoft.Json.JsonReader jsonReader = new Newtonsoft.Json.JsonTextReader(reader);
                 return serializer.Deserialize<BeastSaber.BeastSaberApiResult>(jsonReader);
             }
-            catch(Exception ex)
+            catch (Exception ex)
             {
                 Plugin.log.Error($"Failed to get BeastSaber api page: {ex}");
                 return new BeastSaberApiResult { songs = new List<BeastSaberSong>(), next_page = -1 };
             }
 
-             
+
         }
     }
 }

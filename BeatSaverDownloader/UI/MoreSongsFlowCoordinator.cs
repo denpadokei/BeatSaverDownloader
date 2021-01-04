@@ -74,7 +74,7 @@ namespace BeatSaverDownloader.UI
         internal void UpdateTitle()
         {
             string title = $"{_moreSongsView._currentFilter}";
-            switch(_moreSongsView._currentFilter)
+            switch (_moreSongsView._currentFilter)
             {
                 case Misc.Filters.FilterMode.BeatSaver:
                     SetTitle(title + $" - {_moreSongsView._currentBeatSaverFilter.Name()}");
