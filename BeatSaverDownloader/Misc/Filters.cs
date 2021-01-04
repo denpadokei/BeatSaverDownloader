@@ -27,7 +27,7 @@ namespace BeatSaverDownloader.Misc
             switch(option)
             {
                 case BeastSaberFilterOptions.CuratorRecommended:
-                    return "Curator Reccomended";
+                    return "Curator Recommended";
                 default:
                     return option.ToString();
             }

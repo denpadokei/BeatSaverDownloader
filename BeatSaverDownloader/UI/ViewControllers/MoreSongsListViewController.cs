@@ -20,6 +20,7 @@ using BeatSaberMarkupLanguage.Tags;
 using System.IO;
 namespace BeatSaverDownloader.UI.ViewControllers
 {
+
     public class MoreSongsListViewController : BeatSaberMarkupLanguage.ViewControllers.BSMLResourceViewController
     {
 
