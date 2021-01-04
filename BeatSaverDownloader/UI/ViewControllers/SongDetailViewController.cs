@@ -37,7 +37,8 @@ namespace BeatSaverDownloader.UI.ViewControllers
         private CurvedTextMeshPro _notesText;
         private CurvedTextMeshPro _obstaclesText;
         private CurvedTextMeshPro _bombsText;
-
+        private CurvedTextMeshPro _upText;
+        private CurvedTextMeshPro _downText;
         private bool _downloadInteractable = false;
 
         public Action<BeatSaverSharp.Beatmap, Sprite> didPressDownload;
@@ -110,7 +111,10 @@ namespace BeatSaverDownloader.UI.ViewControllers
                 _notesText.text = "--";
                 _obstaclesText.text = "--";
                 _bombsText.text = "--";
+                _upText.text = "--";
+                _downText.text = "--";
                 _songNameText.text = "--";
+                _songSubText.text = "--";
                 _coverImage.sprite = Misc.Sprites.LoadSpriteFromTexture(Texture2D.blackTexture);
                 _diffSegmentedControl.SetTexts(new string[] { });
                 _characteristicSegmentedControl.SetData(new IconSegmentedControl.DataItem[] { });
@@ -187,7 +191,8 @@ namespace BeatSaverDownloader.UI.ViewControllers
             _notesText = _levelDetails.GetComponentsInChildren<CurvedTextMeshPro>().First(x => x.gameObject.transform.parent.name == "NotesCount");
             _obstaclesText = _levelDetails.GetComponentsInChildren<CurvedTextMeshPro>().First(x => x.gameObject.transform.parent.name == "ObstaclesCount");
             _bombsText = _levelDetails.GetComponentsInChildren<CurvedTextMeshPro>().First(x => x.gameObject.transform.parent.name == "BombsCount");
-
+          
+            CreateVoteDisplay();
             //     _timeText.text = "--";
             //      _bpmText.text = "--";
             _songSubText.text = "--";
@@ -196,10 +201,22 @@ namespace BeatSaverDownloader.UI.ViewControllers
             _obstaclesText.text = "--";
             _bombsText.text = "--";
             _songNameText.text = "--";
+            _upText.text = "--";
+            _downText.text = "--";
             _detailViewSetup = true;
             _levelDetails.gameObject.SetActive(true);
         }
-
+        private void CreateVoteDisplay()
+        {
+            var bombsDisplay = _levelDetails.transform.Find("BeatmapParamsPanel").Find("BombsCount");
+           var layout = bombsDisplay.parent.gameObject.AddComponent<HorizontalLayoutGroup>();
+            var upDisplay = GameObject.Instantiate(bombsDisplay, _bombsText.transform.parent.parent);
+            upDisplay.GetComponentInChildren<ImageView>().sprite = BeatSaverDownloader.Misc.Sprites.ThumbUp;
+            _upText = upDisplay.GetComponentInChildren<CurvedTextMeshPro>();
+            var downDisplay = GameObject.Instantiate(bombsDisplay, _bombsText.transform.parent.parent);
+            downDisplay.GetComponentInChildren<ImageView>().sprite = BeatSaverDownloader.Misc.Sprites.ThumbDown;
+            _downText = downDisplay.GetComponentInChildren<CurvedTextMeshPro>();
+        }
         public void SelectedDifficulty(BeatSaverSharp.BeatmapCharacteristicDifficulty difficulty)
         {
             //       _timeText.text = $"{Math.Floor((double)difficulty.Length / 60):N0}:{Math.Floor((double)difficulty.Length % 60):00}";
@@ -209,6 +226,8 @@ namespace BeatSaverDownloader.UI.ViewControllers
             _notesText.text = difficulty.Notes.ToString();
             _obstaclesText.text = difficulty.Obstacles.ToString();
             _bombsText.text = difficulty.Bombs.ToString();
+            _upText.text = _currentSong.Stats.UpVotes.ToString();
+            _downText.text = _currentSong.Stats.DownVotes.ToString();
         }
 
         public void SelectedCharacteristic(BeatSaverSharp.BeatmapCharacteristic characteristic)
