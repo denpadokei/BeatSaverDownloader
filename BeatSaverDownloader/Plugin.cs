@@ -10,7 +10,7 @@ using UnityEngine.SceneManagement;
 using System.Collections;
 using System.Threading;
 using System.Collections.Concurrent;
-
+using System.Net.Http;
 namespace BeatSaverDownloader
 {
     public enum SongQueueState { Queued, Downloading, Downloaded, Error };
@@ -20,10 +20,13 @@ namespace BeatSaverDownloader
         public static Plugin instance;
         public static IPA.Logging.Logger log;
         public static BeatSaverSharp.BeatSaver BeatSaver;
+        public static HttpClient BeastSaberRequestClient;
         [Init]
-        public void Init(object nullObject, IPA.Logging.Logger logger)
+        public void Init(object nullObject, IPA.Logging.Logger logger, IPA.Loader.PluginMetadata metaData)
         {
             log = logger;
+            BeastSaberRequestClient = new HttpClient() { BaseAddress = new Uri("https://bsaber.com/wp-json/bsaber-api/") };
+            BeastSaberRequestClient.DefaultRequestHeaders.Add("User-Agent", $"BeatSaverDownloader/{metaData.Version}");
         }
 
         public void OnApplicationQuit()
@@ -50,7 +53,6 @@ namespace BeatSaverDownloader
             };
 
             BeatSaver = new BeatSaverSharp.BeatSaver(httpOptions);
-
             instance = this;
             PluginConfig.LoadConfig();
             Sprites.ConvertToSprites();

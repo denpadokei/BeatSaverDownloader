@@ -6,6 +6,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using System.Collections.Generic;
 using System.Collections;
+using System.Net.Http;
 using System.Runtime.CompilerServices;
 using System.Linq;
 using UnityEngine;
@@ -16,19 +17,17 @@ using Color = UnityEngine.Color;
 using BeatSaverSharp;
 using UnityEngine.UI;
 using BeatSaberMarkupLanguage.Tags;
-
+using System.IO;
 namespace BeatSaverDownloader.UI.ViewControllers
 {
     public class MoreSongsListViewController : BeatSaberMarkupLanguage.ViewControllers.BSMLResourceViewController
     {
-        public enum FilterMode { Search, BeatSaver, ScoreSaber }
-        public enum BeatSaverFilterOptions { Latest, Hot, Rating, Downloads, Plays, Uploader }
-        public enum ScoreSaberFilterOptions { Trending, Ranked, Difficulty, Qualified, Loved, Plays }
 
-        internal FilterMode _currentFilter = FilterMode.ScoreSaber;
-        private FilterMode _previousFilter = FilterMode.ScoreSaber;
-        internal BeatSaverFilterOptions _currentBeatSaverFilter = BeatSaverFilterOptions.Hot;
-        internal ScoreSaberFilterOptions _currentScoreSaberFilter = ScoreSaberFilterOptions.Trending;
+        internal Filters.FilterMode _currentFilter = Filters.FilterMode.ScoreSaber;
+        private Filters.FilterMode _previousFilter = Filters.FilterMode.ScoreSaber;
+        internal Filters.BeatSaverFilterOptions _currentBeatSaverFilter = Filters.BeatSaverFilterOptions.Hot;
+        internal Filters.ScoreSaberFilterOptions _currentScoreSaberFilter = Filters.ScoreSaberFilterOptions.Trending;
+        internal Filters.BeastSaberFilterOptions _currentBeastSaberFilter = Filters.BeastSaberFilterOptions.CuratorRecommended;
         private BeatSaverSharp.User _currentUploader;
         private string _currentSearch;
         private string _fetchingDetails = "";
@@ -128,7 +127,7 @@ namespace BeatSaverDownloader.UI.ViewControllers
 
         internal void SortClosed()
         {
-       //     Plugin.log.Info("Sort modal closed");
+            //     Plugin.log.Info("Sort modal closed");
             _currentFilter = _previousFilter;
         }
 
@@ -155,7 +154,7 @@ namespace BeatSaverDownloader.UI.ViewControllers
         internal void SelectedSource(TableView tableView, int row)
         {
             parserParams.EmitEvent("close-sourceModal");
-            FilterMode filter = (sourceListTableData.data[row] as SourceCellInfo).filter;
+            Filters.FilterMode filter = (sourceListTableData.data[row] as SourceCellInfo).filter;
             _previousFilter = _currentFilter;
             _currentFilter = filter;
             SetupSortOptions();
@@ -179,7 +178,7 @@ namespace BeatSaverDownloader.UI.ViewControllers
             if (string.IsNullOrWhiteSpace(text)) return;
             //   Plugin.log.Info("Search Pressed: " + text);
             _currentSearch = text;
-            _currentFilter = FilterMode.Search;
+            _currentFilter = Filters.FilterMode.Search;
             ClearData();
             filterDidChange?.Invoke();
             await GetNewPage(3);
@@ -203,8 +202,8 @@ namespace BeatSaverDownloader.UI.ViewControllers
         internal async void SortByUser(BeatSaverSharp.User user)
         {
             _currentUploader = user;
-            _currentFilter = FilterMode.BeatSaver;
-            _currentBeatSaverFilter = BeatSaverFilterOptions.Uploader;
+            _currentFilter = Filters.FilterMode.BeatSaver;
+            _currentBeatSaverFilter = Filters.BeatSaverFilterOptions.Uploader;
             ClearData();
             filterDidChange?.Invoke();
             await GetNewPage(3);
@@ -292,8 +291,8 @@ namespace BeatSaverDownloader.UI.ViewControllers
 
         public void SetLoading(bool value, double progress = 0, string details = "")
         {
-            if(loadingSpinner == null)
-            loadingSpinner = GameObject.Instantiate(Resources.FindObjectsOfTypeAll<LoadingControl>().First(), loadingModal.transform);
+            if (loadingSpinner == null)
+                loadingSpinner = GameObject.Instantiate(Resources.FindObjectsOfTypeAll<LoadingControl>().First(), loadingModal.transform);
             Destroy(loadingSpinner.GetComponent<Touchable>());
             if (value)
             {
@@ -308,8 +307,9 @@ namespace BeatSaverDownloader.UI.ViewControllers
         public void SetupSourceOptions()
         {
             sourceListTableData.data.Clear();
-            sourceListTableData.data.Add(new SourceCellInfo(FilterMode.BeatSaver, "BeatSaver", null, Sprites.BeatSaverIcon));
-            sourceListTableData.data.Add(new SourceCellInfo(FilterMode.ScoreSaber, "ScoreSaber", null, Sprites.ScoreSaberIcon));
+            sourceListTableData.data.Add(new SourceCellInfo(Filters.FilterMode.BeatSaver, "BeatSaver", null, Sprites.BeatSaverIcon));
+            sourceListTableData.data.Add(new SourceCellInfo(Filters.FilterMode.ScoreSaber, "ScoreSaber", null, Sprites.ScoreSaberIcon));
+            sourceListTableData.data.Add(new SourceCellInfo(Filters.FilterMode.BeastSaber, "BeastSaber", null, Sprites.BeastSaberLogo));
             sourceListTableData.tableView.ReloadData();
         }
         public void SetupSortOptions()
@@ -317,22 +317,26 @@ namespace BeatSaverDownloader.UI.ViewControllers
             sortListTableData.data.Clear();
             switch (_currentFilter)
             {
-                case FilterMode.BeatSaver:
-                    sortListTableData.data.Add(new SortFilterCellInfo(new SortFilter(FilterMode.BeatSaver, BeatSaverFilterOptions.Hot), "Hot", "BeatSaver", Sprites.BeatSaverIcon));
-                    sortListTableData.data.Add(new SortFilterCellInfo(new SortFilter(FilterMode.BeatSaver, BeatSaverFilterOptions.Latest), "Latest", "BeatSaver", Sprites.BeatSaverIcon));
-                    sortListTableData.data.Add(new SortFilterCellInfo(new SortFilter(FilterMode.BeatSaver, BeatSaverFilterOptions.Rating), "Rating", "BeatSaver", Sprites.BeatSaverIcon));
+                case Filters.FilterMode.BeatSaver:
+                    sortListTableData.data.Add(new SortFilterCellInfo(new SortFilter(Filters.FilterMode.BeatSaver, Filters.BeatSaverFilterOptions.Hot), "Hot", "BeatSaver", Sprites.BeatSaverIcon));
+                    sortListTableData.data.Add(new SortFilterCellInfo(new SortFilter(Filters.FilterMode.BeatSaver, Filters.BeatSaverFilterOptions.Latest), "Latest", "BeatSaver", Sprites.BeatSaverIcon));
+                    sortListTableData.data.Add(new SortFilterCellInfo(new SortFilter(Filters.FilterMode.BeatSaver, Filters.BeatSaverFilterOptions.Rating), "Rating", "BeatSaver", Sprites.BeatSaverIcon));
 
-                    sortListTableData.data.Add(new SortFilterCellInfo(new SortFilter(FilterMode.BeatSaver, BeatSaverFilterOptions.Downloads), "Downloads", "BeatSaver", Sprites.BeatSaverIcon));
-                    sortListTableData.data.Add(new SortFilterCellInfo(new SortFilter(FilterMode.BeatSaver, BeatSaverFilterOptions.Plays), "Plays", "BeatSaver", Sprites.BeatSaverIcon));
+                    sortListTableData.data.Add(new SortFilterCellInfo(new SortFilter(Filters.FilterMode.BeatSaver, Filters.BeatSaverFilterOptions.Downloads), "Downloads", "BeatSaver", Sprites.BeatSaverIcon));
+                    sortListTableData.data.Add(new SortFilterCellInfo(new SortFilter(Filters.FilterMode.BeatSaver, Filters.BeatSaverFilterOptions.Plays), "Plays", "BeatSaver", Sprites.BeatSaverIcon));
                     break;
-                case FilterMode.ScoreSaber:
-                    sortListTableData.data.Add(new SortFilterCellInfo(new SortFilter(FilterMode.ScoreSaber, default, ScoreSaberFilterOptions.Trending), "Trending", "ScoreSaber", Sprites.ScoreSaberIcon));
-                    sortListTableData.data.Add(new SortFilterCellInfo(new SortFilter(FilterMode.ScoreSaber, default, ScoreSaberFilterOptions.Ranked), "Ranked", "ScoreSaber", Sprites.ScoreSaberIcon));
-                    sortListTableData.data.Add(new SortFilterCellInfo(new SortFilter(FilterMode.ScoreSaber, default, ScoreSaberFilterOptions.Qualified), "Qualified", "ScoreSaber", Sprites.ScoreSaberIcon));
-                    sortListTableData.data.Add(new SortFilterCellInfo(new SortFilter(FilterMode.ScoreSaber, default, ScoreSaberFilterOptions.Loved), "Loved", "ScoreSaber", Sprites.ScoreSaberIcon));
-                    sortListTableData.data.Add(new SortFilterCellInfo(new SortFilter(FilterMode.ScoreSaber, default, ScoreSaberFilterOptions.Difficulty), "Difficulty", "ScoreSaber", Sprites.ScoreSaberIcon));
-                    sortListTableData.data.Add(new SortFilterCellInfo(new SortFilter(FilterMode.ScoreSaber, default, ScoreSaberFilterOptions.Plays), "Plays", "ScoreSaber", Sprites.ScoreSaberIcon));
+                case Filters.FilterMode.ScoreSaber:
+                    sortListTableData.data.Add(new SortFilterCellInfo(new SortFilter(Filters.FilterMode.ScoreSaber, default, Filters.ScoreSaberFilterOptions.Trending), "Trending", "ScoreSaber", Sprites.ScoreSaberIcon));
+                    sortListTableData.data.Add(new SortFilterCellInfo(new SortFilter(Filters.FilterMode.ScoreSaber, default, Filters.ScoreSaberFilterOptions.Ranked), "Ranked", "ScoreSaber", Sprites.ScoreSaberIcon));
+                    sortListTableData.data.Add(new SortFilterCellInfo(new SortFilter(Filters.FilterMode.ScoreSaber, default, Filters.ScoreSaberFilterOptions.Qualified), "Qualified", "ScoreSaber", Sprites.ScoreSaberIcon));
+                    sortListTableData.data.Add(new SortFilterCellInfo(new SortFilter(Filters.FilterMode.ScoreSaber, default, Filters.ScoreSaberFilterOptions.Loved), "Loved", "ScoreSaber", Sprites.ScoreSaberIcon));
+                    sortListTableData.data.Add(new SortFilterCellInfo(new SortFilter(Filters.FilterMode.ScoreSaber, default, Filters.ScoreSaberFilterOptions.Difficulty), "Difficulty", "ScoreSaber", Sprites.ScoreSaberIcon));
+                    sortListTableData.data.Add(new SortFilterCellInfo(new SortFilter(Filters.FilterMode.ScoreSaber, default, Filters.ScoreSaberFilterOptions.Plays), "Plays", "ScoreSaber", Sprites.ScoreSaberIcon));
                     break;
+                case Filters.FilterMode.BeastSaber:
+                    sortListTableData.data.Add(new SortFilterCellInfo(new SortFilter(Filters.FilterMode.BeastSaber, default, default, Filters.BeastSaberFilterOptions.CuratorRecommended), "Curator Recommended", "BeastSaber", Sprites.BeastSaberLogo));
+                    break;
+
             }
             sortListTableData.tableView.ReloadData();
         }
@@ -352,13 +356,16 @@ namespace BeatSaverDownloader.UI.ViewControllers
             {
                 switch (_currentFilter)
                 {
-                    case FilterMode.BeatSaver:
+                    case Filters.FilterMode.BeatSaver:
                         await GetPagesBeatSaver(count);
                         break;
-                    case FilterMode.ScoreSaber:
+                    case Filters.FilterMode.ScoreSaber:
                         await GetPagesScoreSaber(count);
                         break;
-                    case FilterMode.Search:
+                    case Filters.FilterMode.BeastSaber:
+                        await GetPagesBeastSaber(count);
+                        break;
+                    case Filters.FilterMode.Search:
                         await GetPagesSearch(count);
                         break;
                 }
@@ -372,6 +379,49 @@ namespace BeatSaverDownloader.UI.ViewControllers
             }
             Working = false;
         }
+        internal async Task GetPagesBeastSaber(uint count)
+        {
+            List<BeastSaber.BeastSaberSong> newMaps = new List<BeastSaber.BeastSaberSong>();
+            Newtonsoft.Json.JsonSerializer serializer = new Newtonsoft.Json.JsonSerializer();
+            for (uint i = 0; i < count; ++i)
+            {
+                _fetchingDetails = $"({i}/{count})";
+                BeastSaber.BeastSaberApiResult page = null;
+                string apiUrl = "";
+                switch (_currentBeastSaberFilter)
+                {
+                    case Filters.BeastSaberFilterOptions.CuratorRecommended:
+                        apiUrl = $"songs?bookmarked_by=curatorrecommended&page={lastPage + 1}&count=40";
+                        break;
+                }
+                HttpResponseMessage response = await Plugin.BeastSaberRequestClient.GetAsync(apiUrl, cancellationTokenSource.Token);
+                response.EnsureSuccessStatusCode();
+                Stream result = await response.Content.ReadAsStreamAsync();
+                StreamReader reader = new StreamReader(result);
+                Newtonsoft.Json.JsonReader jsonReader = new Newtonsoft.Json.JsonTextReader(reader);
+                page = serializer.Deserialize<BeastSaber.BeastSaberApiResult>(jsonReader);
+                lastPage++;
+                if (page.songs?.Count == 0)
+                {
+                    _endOfResults = true;
+                }
+                if (page.songs != null)
+                    newMaps.AddRange(page.songs);
+                if (_endOfResults) break;
+                //     Plugin.log.Info($"{page.songs.Count} Curated songs on page {i}");
+            }
+            foreach (var song in newMaps)
+            {
+                BeatSaverSharp.Beatmap fromBeastSaber = ConstructBeatmapFromBeastSaber(song);
+                _songs.Add(new StrongBox<Beatmap>(fromBeastSaber));
+                if (SongDownloader.Instance.IsSongDownloaded(song.hash))
+                    customListTableData.data.Add(new BeatSaverCustomSongCellInfo(fromBeastSaber, CellDidSetImage, $"<#7F7F7F>{song.title}", song.level_author_name));
+                else
+                    customListTableData.data.Add(new BeatSaverCustomSongCellInfo(fromBeastSaber, CellDidSetImage, song.title, song.level_author_name));
+                customListTableData.tableView.ReloadData();
+            }
+            _fetchingDetails = "";
+        }
         internal async Task GetPagesScoreSaber(uint count)
         {
             List<ScoreSaberSharp.Song> newMaps = new List<ScoreSaberSharp.Song>();
@@ -381,22 +431,22 @@ namespace BeatSaverDownloader.UI.ViewControllers
                 ScoreSaberSharp.Songs page = null;
                 switch (_currentScoreSaberFilter)
                 {
-                    case ScoreSaberFilterOptions.Trending:
+                    case Filters.ScoreSaberFilterOptions.Trending:
                         page = await ScoreSaberSharp.ScoreSaber.Trending(lastPage, cancellationTokenSource.Token, fetchProgress);
                         break;
-                    case ScoreSaberFilterOptions.Ranked:
+                    case Filters.ScoreSaberFilterOptions.Ranked:
                         page = await ScoreSaberSharp.ScoreSaber.Ranked(lastPage, cancellationTokenSource.Token, fetchProgress);
                         break;
-                    case ScoreSaberFilterOptions.Qualified:
+                    case Filters.ScoreSaberFilterOptions.Qualified:
                         page = await ScoreSaberSharp.ScoreSaber.Qualified(lastPage, cancellationTokenSource.Token, fetchProgress);
                         break;
-                    case ScoreSaberFilterOptions.Loved:
+                    case Filters.ScoreSaberFilterOptions.Loved:
                         page = await ScoreSaberSharp.ScoreSaber.Loved(lastPage, cancellationTokenSource.Token, fetchProgress);
                         break;
-                    case ScoreSaberFilterOptions.Plays:
+                    case Filters.ScoreSaberFilterOptions.Plays:
                         page = await ScoreSaberSharp.ScoreSaber.Plays(lastPage, cancellationTokenSource.Token, fetchProgress);
                         break;
-                    case ScoreSaberFilterOptions.Difficulty:
+                    case Filters.ScoreSaberFilterOptions.Difficulty:
                         page = await ScoreSaberSharp.ScoreSaber.Difficulty(lastPage, cancellationTokenSource.Token, fetchProgress);
                         break;
 
@@ -414,8 +464,8 @@ namespace BeatSaverDownloader.UI.ViewControllers
             {
                 BeatSaverSharp.Beatmap fromScoreSaber = ConstructBeatmapFromScoreSaber(song);
                 _songs.Add(new StrongBox<Beatmap>(fromScoreSaber));
-                if(SongDownloader.Instance.IsSongDownloaded(song.id))
-                customListTableData.data.Add(new ScoreSaberCustomSongCellInfo(song, CellDidSetImage, $"<#7F7F7F>{song.name}", song.levelAuthorName));
+                if (SongDownloader.Instance.IsSongDownloaded(song.id))
+                    customListTableData.data.Add(new ScoreSaberCustomSongCellInfo(song, CellDidSetImage, $"<#7F7F7F>{song.name}", song.levelAuthorName));
                 else
                     customListTableData.data.Add(new ScoreSaberCustomSongCellInfo(song, CellDidSetImage, song.name, song.levelAuthorName));
                 customListTableData.tableView.ReloadData();
@@ -432,22 +482,22 @@ namespace BeatSaverDownloader.UI.ViewControllers
                 AutomapperQuery automapperQuery = AllowAIGeneratedMaps ? AutomapperQuery.All : AutomapperQuery.None;
                 switch (_currentBeatSaverFilter)
                 {
-                    case BeatSaverFilterOptions.Hot:
+                    case Filters.BeatSaverFilterOptions.Hot:
                         page = await Plugin.BeatSaver.Hot(lastPage, cancellationTokenSource.Token, fetchProgress, automapperQuery);
                         break;
-                    case BeatSaverFilterOptions.Latest:
+                    case Filters.BeatSaverFilterOptions.Latest:
                         page = await Plugin.BeatSaver.Latest(lastPage, cancellationTokenSource.Token, fetchProgress, automapperQuery);
                         break;
-                    case BeatSaverFilterOptions.Rating:
+                    case Filters.BeatSaverFilterOptions.Rating:
                         page = await Plugin.BeatSaver.Rating(lastPage, cancellationTokenSource.Token, fetchProgress, automapperQuery);
                         break;
-                    case BeatSaverFilterOptions.Plays:
+                    case Filters.BeatSaverFilterOptions.Plays:
                         page = await Plugin.BeatSaver.Plays(lastPage, cancellationTokenSource.Token, fetchProgress, automapperQuery);
                         break;
-                    case BeatSaverFilterOptions.Uploader:
+                    case Filters.BeatSaverFilterOptions.Uploader:
                         page = await _currentUploader.Beatmaps(lastPage, cancellationTokenSource.Token, fetchProgress);
                         break;
-                    case BeatSaverFilterOptions.Downloads:
+                    case Filters.BeatSaverFilterOptions.Downloads:
                         page = await Plugin.BeatSaver.Downloads(lastPage, cancellationTokenSource.Token, fetchProgress, automapperQuery);
                         break;
                 }
@@ -463,8 +513,8 @@ namespace BeatSaverDownloader.UI.ViewControllers
             newMaps.ForEach(x => _songs.Add(new StrongBox<BeatSaverSharp.Beatmap>(x)));
             foreach (var song in newMaps)
             {
-                if(SongDownloader.Instance.IsSongDownloaded(song.Hash))
-                customListTableData.data.Add(new BeatSaverCustomSongCellInfo(song, CellDidSetImage, $"<#7F7F7F>{song.Name}", song.Uploader.Username));
+                if (SongDownloader.Instance.IsSongDownloaded(song.Hash))
+                    customListTableData.data.Add(new BeatSaverCustomSongCellInfo(song, CellDidSetImage, $"<#7F7F7F>{song.Name}", song.Uploader.Username));
                 else
                     customListTableData.data.Add(new BeatSaverCustomSongCellInfo(song, CellDidSetImage, song.Name, song.Uploader.Username));
                 customListTableData.tableView.ReloadData();
@@ -516,6 +566,11 @@ namespace BeatSaverDownloader.UI.ViewControllers
             _fetchingDetails = "";
 
         }
+        public static BeatSaverSharp.Beatmap ConstructBeatmapFromBeastSaber(BeastSaber.BeastSaberSong song)
+        {
+            BeatSaverSharp.Beatmap beatSaverSong = new BeatSaverSharp.Beatmap(Plugin.BeatSaver, song.song_key, song.hash, song.title);
+            return beatSaverSong;
+        }
         public static BeatSaverSharp.Beatmap ConstructBeatmapFromScoreSaber(ScoreSaberSharp.Song song)
         {
             BeatSaverSharp.Beatmap beatSaverSong = new BeatSaverSharp.Beatmap(Plugin.BeatSaver, hash: song.id);
@@ -539,15 +594,16 @@ namespace BeatSaverDownloader.UI.ViewControllers
     }
     public class SortFilter
     {
-        public MoreSongsListViewController.FilterMode Mode = MoreSongsListViewController.FilterMode.BeatSaver;
-        public MoreSongsListViewController.BeatSaverFilterOptions BeatSaverOption = MoreSongsListViewController.BeatSaverFilterOptions.Hot;
-        public MoreSongsListViewController.ScoreSaberFilterOptions ScoreSaberOption = MoreSongsListViewController.ScoreSaberFilterOptions.Trending;
-
-        public SortFilter(MoreSongsListViewController.FilterMode mode, MoreSongsListViewController.BeatSaverFilterOptions beatSaverOption = default, MoreSongsListViewController.ScoreSaberFilterOptions scoreSaberOption = default)
+        public Filters.FilterMode Mode = Filters.FilterMode.BeatSaver;
+        public Filters.BeatSaverFilterOptions BeatSaverOption = Filters.BeatSaverFilterOptions.Hot;
+        public Filters.ScoreSaberFilterOptions ScoreSaberOption = Filters.ScoreSaberFilterOptions.Trending;
+        public Filters.BeastSaberFilterOptions BeastSaberOption = Filters.BeastSaberFilterOptions.CuratorRecommended;
+        public SortFilter(Filters.FilterMode mode, Filters.BeatSaverFilterOptions beatSaverOption = default, Filters.ScoreSaberFilterOptions scoreSaberOption = default, Filters.BeastSaberFilterOptions beastSaberOption = default)
         {
             Mode = mode;
             BeatSaverOption = beatSaverOption;
             ScoreSaberOption = scoreSaberOption;
+            BeastSaberOption = beastSaberOption;
         }
     }
     public class SortFilterCellInfo : CustomListTableData.CustomCellInfo
@@ -560,8 +616,8 @@ namespace BeatSaverDownloader.UI.ViewControllers
     }
     public class SourceCellInfo : CustomListTableData.CustomCellInfo
     {
-        public MoreSongsListViewController.FilterMode filter;
-        public SourceCellInfo(MoreSongsListViewController.FilterMode filter, string text, string subtext = null, Sprite icon = null) : base(text, subtext, icon)
+        public Filters.FilterMode filter;
+        public SourceCellInfo(Filters.FilterMode filter, string text, string subtext = null, Sprite icon = null) : base(text, subtext, icon)
         {
             this.filter = filter;
         }
@@ -569,7 +625,7 @@ namespace BeatSaverDownloader.UI.ViewControllers
     public class BeatSaverCustomSongCellInfo : CustomListTableData.CustomCellInfo
     {
         protected BeatSaverSharp.Beatmap _song;
-        Action<CustomListTableData.CustomCellInfo> _callback;
+        protected Action<CustomListTableData.CustomCellInfo> _callback;
         public BeatSaverCustomSongCellInfo(BeatSaverSharp.Beatmap song, Action<CustomListTableData.CustomCellInfo> callback, string text, string subtext = null) : base(text, subtext, null)
         {
             _song = song;
@@ -578,6 +634,21 @@ namespace BeatSaverDownloader.UI.ViewControllers
         }
         protected async void LoadImage()
         {
+            try
+            {
+                if (_song.Partial)
+                {
+                    base.icon = Sprites.BeastSaberLogo;
+                    _callback(this);
+                    return;
+                }
+                //await _song.Populate();
+            }
+            catch (BeatSaverSharp.Exceptions.InvalidPartialException e)
+            {
+                Plugin.log.Debug($"Failed to populate Partial Beatmap: {_song.Name}");
+            }
+
             byte[] image = await _song.FetchCoverImage();
             Sprite icon = Misc.Sprites.LoadSpriteRaw(image);
             base.icon = icon;
