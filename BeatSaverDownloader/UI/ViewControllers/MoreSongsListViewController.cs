@@ -309,7 +309,7 @@ namespace BeatSaverDownloader.UI.ViewControllers
             sourceListTableData.data.Clear();
             sourceListTableData.data.Add(new SourceCellInfo(Filters.FilterMode.BeatSaver, "BeatSaver", null, Sprites.BeatSaverIcon));
             sourceListTableData.data.Add(new SourceCellInfo(Filters.FilterMode.ScoreSaber, "ScoreSaber", null, Sprites.ScoreSaberIcon));
-            sourceListTableData.data.Add(new SourceCellInfo(Filters.FilterMode.BeastSaber, "BeastSaber", null, Sprites.BeastSaberLogo));
+            sourceListTableData.data.Add(new SourceCellInfo(Filters.FilterMode.BeastSaber, "BeastSaber", null, Sprites.BeastSaberLogoSmall));
             sourceListTableData.tableView.ReloadData();
         }
         public void SetupSortOptions()
@@ -334,7 +334,7 @@ namespace BeatSaverDownloader.UI.ViewControllers
                     sortListTableData.data.Add(new SortFilterCellInfo(new SortFilter(Filters.FilterMode.ScoreSaber, default, Filters.ScoreSaberFilterOptions.Plays), "Plays", "ScoreSaber", Sprites.ScoreSaberIcon));
                     break;
                 case Filters.FilterMode.BeastSaber:
-                    sortListTableData.data.Add(new SortFilterCellInfo(new SortFilter(Filters.FilterMode.BeastSaber, default, default, Filters.BeastSaberFilterOptions.CuratorRecommended), "Curator Recommended", "BeastSaber", Sprites.BeastSaberLogo));
+                    sortListTableData.data.Add(new SortFilterCellInfo(new SortFilter(Filters.FilterMode.BeastSaber, default, default, Filters.BeastSaberFilterOptions.CuratorRecommended), "Curator Recommended", "BeastSaber", Sprites.BeastSaberLogoSmall));
                     break;
 
             }
