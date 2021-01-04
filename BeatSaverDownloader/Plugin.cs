@@ -20,13 +20,11 @@ namespace BeatSaverDownloader
         public static Plugin instance;
         public static IPA.Logging.Logger log;
         public static BeatSaverSharp.BeatSaver BeatSaver;
-        public static HttpClient BeastSaberRequestClient;
         [Init]
-        public void Init(object nullObject, IPA.Logging.Logger logger, IPA.Loader.PluginMetadata metaData)
+        public void Init(object nullObject, IPA.Logging.Logger logger, IPA.Loader.PluginMetadata metadata)
         {
             log = logger;
-            BeastSaberRequestClient = new HttpClient() { BaseAddress = new Uri("https://bsaber.com/wp-json/bsaber-api/") };
-            BeastSaberRequestClient.DefaultRequestHeaders.Add("User-Agent", $"BeatSaverDownloader/{metaData.Version}");
+            BeastSaber.BeastSaberApiHelper.InitializeBeastSaberHttpClient(metadata);
         }
 
         public void OnApplicationQuit()

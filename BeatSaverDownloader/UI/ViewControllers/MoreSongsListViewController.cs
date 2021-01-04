@@ -382,24 +382,12 @@ namespace BeatSaverDownloader.UI.ViewControllers
         internal async Task GetPagesBeastSaber(uint count)
         {
             List<BeastSaber.BeastSaberSong> newMaps = new List<BeastSaber.BeastSaberSong>();
-            Newtonsoft.Json.JsonSerializer serializer = new Newtonsoft.Json.JsonSerializer();
             for (uint i = 0; i < count; ++i)
             {
                 _fetchingDetails = $"({i}/{count})";
-                BeastSaber.BeastSaberApiResult page = null;
-                string apiUrl = "";
-                switch (_currentBeastSaberFilter)
-                {
-                    case Filters.BeastSaberFilterOptions.CuratorRecommended:
-                        apiUrl = $"songs?bookmarked_by=curatorrecommended&page={lastPage + 1}&count=40";
-                        break;
-                }
-                HttpResponseMessage response = await Plugin.BeastSaberRequestClient.GetAsync(apiUrl, cancellationTokenSource.Token);
-                response.EnsureSuccessStatusCode();
-                Stream result = await response.Content.ReadAsStreamAsync();
-                StreamReader reader = new StreamReader(result);
-                Newtonsoft.Json.JsonReader jsonReader = new Newtonsoft.Json.JsonTextReader(reader);
-                page = serializer.Deserialize<BeastSaber.BeastSaberApiResult>(jsonReader);
+                
+                BeastSaber.BeastSaberApiResult page = await BeastSaber.BeastSaberApiHelper.GetPage(_currentBeastSaberFilter, lastPage, 40, cancellationTokenSource.Token);
+                
                 lastPage++;
                 if (page.songs?.Count == 0)
                 {
