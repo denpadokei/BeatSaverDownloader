@@ -14,9 +14,6 @@ namespace BeatSaverDownloader.Misc
         public static Sprite StarEmpty;
         public static Sprite DoubleArrow;
 
-        //by elliotttate#9942
-        public static Sprite BeastSaberLogo;
-
         public static Sprite ReviewIcon;
 
         //https://www.flaticon.com/free-icon/thumbs-up_70420
@@ -45,7 +42,8 @@ namespace BeatSaverDownloader.Misc
 
         public static Sprite BeatSaverIcon;
         public static Sprite ScoreSaberIcon;
-
+        //by elliotttate#9942
+        public static Sprite BeastSaberLogo;
         public static void ConvertToSprites()
         {
             Plugin.log.Info("Creating sprites...");
