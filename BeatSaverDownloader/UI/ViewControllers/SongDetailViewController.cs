@@ -242,12 +242,16 @@ namespace BeatSaverDownloader.UI.ViewControllers
         internal void SetupDifficultyDisplay()
         {
             var diffs = new List<BeatSaverSharp.BeatmapCharacteristicDifficulty>();
-            List<string> diffNames = new List<string>(_selectedCharacteristic.Difficulties.Keys.Where(x => _selectedCharacteristic.Difficulties[x].HasValue)).OrderBy(x => DiffOrder(x)).ToList();
+            List<string> diffNames = new List<string>(_selectedCharacteristic.Difficulties.Keys.Where(x => _selectedCharacteristic.Difficulties.ContainsKey(x))).OrderBy(x => DiffOrder(x)).ToList();
             foreach (var diff in diffNames)
             {
-                if (_selectedCharacteristic.Difficulties[diff].HasValue)
-                    diffs.Add(_selectedCharacteristic.Difficulties[diff].Value);
+                if (_selectedCharacteristic.Difficulties.ContainsKey(diff))
+                {
+                    var x = _selectedCharacteristic.Difficulties[diff];
+                    if (x != null) diffs.Add(x);
+                }
             }
+
 
             for (int i = 0; i < diffNames.Count; ++i)
             {

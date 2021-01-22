@@ -324,7 +324,7 @@ namespace BeatSaverDownloader.UI.ViewControllers
                     sortListTableData.data.Add(new SortFilterCellInfo(new SortFilter(Filters.FilterMode.BeatSaver, Filters.BeatSaverFilterOptions.Rating), "Rating", "BeatSaver", Sprites.BeatSaverIcon));
 
                     sortListTableData.data.Add(new SortFilterCellInfo(new SortFilter(Filters.FilterMode.BeatSaver, Filters.BeatSaverFilterOptions.Downloads), "Downloads", "BeatSaver", Sprites.BeatSaverIcon));
-                    sortListTableData.data.Add(new SortFilterCellInfo(new SortFilter(Filters.FilterMode.BeatSaver, Filters.BeatSaverFilterOptions.Plays), "Plays", "BeatSaver", Sprites.BeatSaverIcon));
+              //      sortListTableData.data.Add(new SortFilterCellInfo(new SortFilter(Filters.FilterMode.BeatSaver, Filters.BeatSaverFilterOptions.Plays), "Plays", "BeatSaver", Sprites.BeatSaverIcon));
                     break;
                 case Filters.FilterMode.ScoreSaber:
                     sortListTableData.data.Add(new SortFilterCellInfo(new SortFilter(Filters.FilterMode.ScoreSaber, default, Filters.ScoreSaberFilterOptions.Trending), "Trending", "ScoreSaber", Sprites.ScoreSaberIcon));
@@ -466,27 +466,35 @@ namespace BeatSaverDownloader.UI.ViewControllers
             for (uint i = 0; i < count; ++i)
             {
                 _fetchingDetails = $"({i + 1}/{count})";
-                BeatSaverSharp.Page page = null;
-                AutomapperQuery automapperQuery = AllowAIGeneratedMaps ? AutomapperQuery.All : AutomapperQuery.None;
+                BeatSaverSharp.Page<PagedRequestOptions> page = null;
+                var options = new PagedRequestOptions
+                {
+                    Page = lastPage,
+                    Token = cancellationTokenSource.Token,
+                    Progress = fetchProgress,
+                    Automaps = AllowAIGeneratedMaps
+                        ? PagedRequestOptions.AutomapFilter.Include
+                        : PagedRequestOptions.AutomapFilter.Exclude,
+                };
                 switch (_currentBeatSaverFilter)
                 {
                     case Filters.BeatSaverFilterOptions.Hot:
-                        page = await Plugin.BeatSaver.Hot(lastPage, cancellationTokenSource.Token, fetchProgress, automapperQuery);
+                        page = await Plugin.BeatSaver.Hot(options);
                         break;
                     case Filters.BeatSaverFilterOptions.Latest:
-                        page = await Plugin.BeatSaver.Latest(lastPage, cancellationTokenSource.Token, fetchProgress, automapperQuery);
+                        page = await Plugin.BeatSaver.Latest(options);
                         break;
                     case Filters.BeatSaverFilterOptions.Rating:
-                        page = await Plugin.BeatSaver.Rating(lastPage, cancellationTokenSource.Token, fetchProgress, automapperQuery);
+                        page = await Plugin.BeatSaver.Rating(options);
                         break;
-                    case Filters.BeatSaverFilterOptions.Plays:
-                        page = await Plugin.BeatSaver.Plays(lastPage, cancellationTokenSource.Token, fetchProgress, automapperQuery);
-                        break;
+              //      case Filters.BeatSaverFilterOptions.Plays:
+               //         page = await Plugin.BeatSaver.Plays(lastPage, cancellationTokenSource.Token, fetchProgress, automapperQuery);
+               //         break;
                     case Filters.BeatSaverFilterOptions.Uploader:
-                        page = await _currentUploader.Beatmaps(lastPage, cancellationTokenSource.Token, fetchProgress);
+                        page = await _currentUploader.Beatmaps(options);
                         break;
                     case Filters.BeatSaverFilterOptions.Downloads:
-                        page = await Plugin.BeatSaver.Downloads(lastPage, cancellationTokenSource.Token, fetchProgress, automapperQuery);
+                        page = await Plugin.BeatSaver.Downloads(options);
                         break;
                 }
                 lastPage++;
@@ -515,7 +523,8 @@ namespace BeatSaverDownloader.UI.ViewControllers
             {
                 string key = _currentSearch.Split(':')[1];
                 _fetchingDetails = $" (By Key:{key}";
-                BeatSaverSharp.Beatmap keyMap = await Plugin.BeatSaver.Key(key, fetchProgress);
+                var options = new StandardRequestOptions { Progress = fetchProgress };
+                BeatSaverSharp.Beatmap keyMap = await Plugin.BeatSaver.Key(key, options);
                 if (keyMap != null && !_songs.Any(x => x.Value == keyMap))
                 {
                     _songs.Add(new StrongBox<BeatSaverSharp.Beatmap>(keyMap));
@@ -532,8 +541,13 @@ namespace BeatSaverDownloader.UI.ViewControllers
             for (uint i = 0; i < count; ++i)
             {
                 _fetchingDetails = $"({i + 1}/{count})";
-                BeatSaverSharp.Page page = await Plugin.BeatSaver.Search(_currentSearch, lastPage, cancellationTokenSource.Token, fetchProgress);
-                lastPage++;
+                var options = new SearchRequestOptions(_currentSearch)
+                {
+                    Page = lastPage,
+                    Token = cancellationTokenSource.Token,
+                    Progress = fetchProgress,
+                };
+                BeatSaverSharp.Page<SearchRequestOptions> page = await Plugin.BeatSaver.Search(options); lastPage++;
                 if (page.TotalDocs == 0 || page.NextPage == null)
                 {
                     _endOfResults = true;
@@ -630,7 +644,7 @@ namespace BeatSaverDownloader.UI.ViewControllers
                 return;
             }
 
-            byte[] image = await _song.FetchCoverImage();
+            byte[] image = await _song.CoverImageBytes();
             Sprite icon = Misc.Sprites.LoadSpriteRaw(image);
             base.icon = icon;
             _callback(this);
