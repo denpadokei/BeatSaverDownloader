@@ -233,7 +233,7 @@ namespace BeatSaverDownloader.UI.ViewControllers
             customListTableData.tableView.ClearSelection();
             customListTableData.data.Clear();
             customListTableData.tableView.ReloadData();
-            customListTableData.tableView.ScrollToCellWithIdx(0, TableViewScroller.ScrollPositionType.Beginning, false);
+            customListTableData.tableView.ScrollToCellWithIdx(0, TableView.ScrollPositionType.Beginning, false);
             _songs.Clear();
             _multiSelectSongs.Clear();
         }
