@@ -18,6 +18,7 @@ using BeatSaverSharp;
 using UnityEngine.UI;
 using BeatSaberMarkupLanguage.Tags;
 using System.IO;
+using IPA.Utilities.Async;
 namespace BeatSaverDownloader.UI.ViewControllers
 {
 
@@ -121,7 +122,7 @@ namespace BeatSaverDownloader.UI.ViewControllers
         internal void Select(TableView tableView, int row)
         {
             if (MultiSelectEnabled)
-                if (!_multiSelectSongs.Any(x => x.Item1 == _songs[row].Value))
+                if (!_multiSelectSongs.Any(x => x.Item1.Hash == _songs[row].Value.Hash))
                     _multiSelectSongs.Add(new Tuple<Beatmap, Sprite>(_songs[row].Value, customListTableData.data[row].icon));
             didSelectSong?.Invoke(_songs[row], customListTableData.data[row].icon);
         }
@@ -646,7 +647,7 @@ namespace BeatSaverDownloader.UI.ViewControllers
 
             byte[] image = await _song.CoverImageBytes();
             Sprite icon = Misc.Sprites.LoadSpriteRaw(image);
-            base.icon = icon;
+           // base.icon = icon;
             _callback(this);
         }
     }
