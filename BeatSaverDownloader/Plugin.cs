@@ -11,6 +11,8 @@ using System.Collections;
 using System.Threading;
 using System.Collections.Concurrent;
 using System.Net.Http;
+using BeatSaverSharp;
+
 namespace BeatSaverDownloader
 {
     public enum SongQueueState { Queued, Downloading, Downloaded, Error };
@@ -39,13 +41,11 @@ namespace BeatSaverDownloader
             string platform = hasSteamDll ? "steam" : "oculus";
             string gameVersionFull = $"{IPA.Utilities.UnityGame.GameVersion.ToString()}-{platform}";
 
-            var httpAgent = new BeatSaverSharp.HttpAgent("BeatSaber", gameVersionFull);
-            var agentList = new List<BeatSaverSharp.HttpAgent> { httpAgent };
-            var httpOptions = new BeatSaverSharp.HttpOptions(
+            //var httpAgent = new BeatSaverSharp.HttpAgent("BeatSaber", gameVersionFull);
+            //var agentList = new List<BeatSaverSharp.HttpAgent> { httpAgent };
+            var httpOptions = new BeatSaverOptions(
             "BeatSaverDownloader",
-            Assembly.GetExecutingAssembly().GetName().Version,
-            agents: agentList
-        );
+            Assembly.GetExecutingAssembly().GetName().Version);
 
             BeatSaver = new BeatSaverSharp.BeatSaver(httpOptions);
 

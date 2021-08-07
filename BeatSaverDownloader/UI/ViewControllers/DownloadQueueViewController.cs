@@ -1,6 +1,7 @@
 ﻿using BeatSaberMarkupLanguage.Attributes;
 using BeatSaberMarkupLanguage.Components;
 using BeatSaberMarkupLanguage.Notify;
+using BeatSaverSharp.Models;
 using BeatSaverDownloader.Misc;
 using System;
 using System.Threading;
@@ -41,11 +42,11 @@ namespace BeatSaverDownloader.UI.ViewControllers
             didFinishDownloadingItem += UpdateDownloadingState;
         }
 
-        internal void EnqueueSong(BeatSaverSharp.Beatmap song, Sprite cover)
+        internal void EnqueueSong(Beatmap song, Sprite cover)
         {
             DownloadQueueItem queuedSong = new DownloadQueueItem(song, cover);
             queueItems.Add(queuedSong);
-            Misc.SongDownloader.Instance.QueuedDownload(song.Hash.ToUpper());
+            Misc.SongDownloader.Instance.QueuedDownload(song.LatestVersion.Hash.ToUpper());
             _downloadList?.tableView?.ReloadData();
             UpdateDownloadingState(queuedSong);
         }
@@ -59,7 +60,7 @@ namespace BeatSaverDownloader.UI.ViewControllers
                 item.AbortDownload();
             }
         }
-        internal async void EnqueueSongs(Tuple<BeatSaverSharp.Beatmap, Sprite>[] songs, CancellationToken cancellationToken)
+        internal async void EnqueueSongs(Tuple<Beatmap, Sprite>[] songs, CancellationToken cancellationToken)
         {
 
             for (int i = 0; i < songs.Length; i++)
@@ -67,24 +68,25 @@ namespace BeatSaverDownloader.UI.ViewControllers
                 if (cancellationToken.IsCancellationRequested)
                     return;
                 bool downloaded = false;
-                Tuple<BeatSaverSharp.Beatmap, Sprite> pair = songs[i];
-                BeatSaverSharp.Beatmap map = pair.Item1;
-                if (map.Partial)
-                {
-                    downloaded = SongDownloader.Instance.IsSongDownloaded(map.Hash);
-                    if (downloaded) continue;
-                    try
-                    {
-                        await map.Populate();
-                    }
-                    catch(BeatSaverSharp.Exceptions.InvalidPartialException ex)
-                    {
-                        Plugin.log.Warn("Map not found on BeatSaver");
-                            continue;
-                    }
-                }
+                Tuple<Beatmap, Sprite> pair = songs[i];
+                Beatmap map = pair.Item1;
+                // たぶんいらない
+                //if (map.Partial)
+                //{
+                //    downloaded = SongDownloader.Instance.IsSongDownloaded(map.LatestVersion.Hash);
+                //    if (downloaded) continue;
+                //    try
+                //    {
+                //        await map.Populate();
+                //    }
+                //    catch(Exceptions.InvalidPartialException ex)
+                //    {
+                //        Plugin.log.Warn("Map not found on BeatSaver");
+                //            continue;
+                //    }
+                //}
                 bool inQueue = queueItems.Any(x => (x as DownloadQueueItem).beatmap == map);
-                downloaded = SongDownloader.Instance.IsSongDownloaded(map.Hash);
+                downloaded = SongDownloader.Instance.IsSongDownloaded(map.LatestVersion.Hash);
                 if (!inQueue & !downloaded) EnqueueSong(map, pair.Item2);
             }
         }
@@ -119,7 +121,7 @@ namespace BeatSaverDownloader.UI.ViewControllers
     {
         public SongQueueState queueState = SongQueueState.Queued;
         internal Progress<double> downloadProgress;
-        internal BeatSaverSharp.Beatmap beatmap;
+        internal Beatmap beatmap;
         private UnityEngine.UI.Image _bgImage;
         private float _downloadingProgess;
         internal CancellationTokenSource cancellationTokenSource = new CancellationTokenSource();
@@ -149,7 +151,7 @@ namespace BeatSaverDownloader.UI.ViewControllers
         {
         }
 
-        public DownloadQueueItem(BeatSaverSharp.Beatmap song, Sprite cover)
+        public DownloadQueueItem(Beatmap song, Sprite cover)
         {
             beatmap = song;
             _songName = song.Metadata.SongName;
